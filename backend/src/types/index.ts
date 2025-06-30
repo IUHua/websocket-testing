@@ -1,9 +1,10 @@
 // 每条消息结构
 export interface Message {
     id: string
-    direction: string
+    description: string
     type: 'sent' | 'received'
-    content: string
+    inJson: string
+    outJson: string
     timestamp: string
 }
 

@@ -116,3 +116,59 @@ export function saveProjectDetail(projectDetail: ProjectDetail): boolean {
         return false
     }
 }
+
+/** 删除指定项目
+ * @param projectId 项目ID
+ * @returns {boolean} 删除成功或失败
+ */
+export function deleteProject(projectId: string): boolean {
+    ensureDataDir()
+    // 删除列表中的项目
+    content = content.filter((item) => item.id !== projectId)
+    fs.writeFileSync(projectFile, JSON.stringify(content, null, 2), 'utf-8')
+
+    // 删除项目详细文件
+    const mockFilePath = path.join(DATA_DIR, `${projectId}.json`)
+    if (fs.existsSync(mockFilePath)) {
+        try {
+            fs.unlinkSync(mockFilePath)
+            return true
+        } catch (err) {
+            console.error(`删除项目 ${projectId} 详情失败:`, err)
+            return false
+        }
+    } else {
+        console.warn(`项目 ${projectId} 详情不存在`)
+        return false
+    }
+    return true
+}
+
+/** 更新项目message
+ * @param projectId 项目ID
+ * @param message message对象
+ * @returns {ProjectMap} 项目列表
+ */
+export function updateProjectMessage(
+    projectId: string,
+    message: Message[]
+): boolean {
+    ensureDataDir()
+    const projectFilePath = path.join(DATA_DIR, `${projectId}.json`)
+    if (fs.existsSync(projectFilePath)) {
+        try {
+            const content = fs.readFileSync(projectFilePath, 'utf-8')
+            const projectDetail = JSON.parse(content)
+            projectDetail.messages = message
+            fs.writeFileSync(
+                projectFilePath,
+                JSON.stringify(projectDetail, null, 2),
+                'utf-8'
+            )
+        } catch (err) {
+            console.error(`更新项目 ${projectId} 详情失败:`, err)
+            return false
+        }
+    }
+    return true
+}
