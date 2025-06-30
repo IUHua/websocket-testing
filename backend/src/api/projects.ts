@@ -6,12 +6,12 @@ import {
     saveProjectDetail,
     deleteProject
 } from '../utils/storage'
-import type { Project, Message, ProjectMap, MockData } from '../types'
+import type { Project, Message, ProjectDetail } from '../types'
 
 const router = Router()
 
 let projects = loadProjects()
-const mockData: Record<string, Record<string, any>> = {}
+let messageData = {} as Message
 
 /** ✅ 获取所有项目
  * @openapi
@@ -174,32 +174,6 @@ router.put('/projects/:id', (req: Request, res: Response) => {
     })
 
     res.json({ success: true, project })
-
-    // const existProject = projects.some((p: Project) => p.id === id);
-    // if (existProject) {
-    //   const contentDetail = loadProjectDetail(id);
-    //   if (!contentDetail) {
-    //     res.status(404).json({ error: "项目不存在" });
-    //     return;
-    //   }
-    //   contentDetail.name = name ? name.toString() : contentDetail.name;
-    //   saveProjectDetail(contentDetail);
-
-    //   res.json(contentDetail);
-    //   return;
-
-    //   // saveProjects(projects);
-    //   // return;
-    // }
-
-    // const project = projects[req.params.id];
-    // if (!project) return
-    // res.status(404).json({ error: "项目不存在" });
-
-    // Object.assign(project, req.body);
-    // saveProjects(projects);
-
-    // res.json(project);
 })
 
 /** ✅ 删除特定项目
@@ -230,14 +204,6 @@ router.delete('/projects/:id', (req: Request, res: Response) => {
         return
     }
     res.json({ success: true })
-
-    // if (!projects[req.params.id]) {
-    //   res.status(404).json({ error: "项目不存在" });
-    //   return;
-    // }
-
-    // delete projects[req.params.id];
-    // saveProjects(projects);
 })
 
 /** ✅ 添加消息
@@ -253,7 +219,7 @@ router.delete('/projects/:id', (req: Request, res: Response) => {
  *         required: true
  *         schema:
  *           type: string
- *           example: 1751253464241
+ *           example: 1751197722752
  *         description: 项目ID
  *     requestBody:
  *       required: true
@@ -397,6 +363,55 @@ router.put('/messages/:projectId', (req: Request, res: Response) => {
     }
 })
 
+/** ✅ 获取指定消息
+ * @openapi
+ * /messages/{projectId}:
+ *   get:
+ *     summary: ✅ 获取指定消息
+ *     tags:
+ *       - 消息管理
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: 1751197722752
+ *         description: 项目ID
+ *       - in: query
+ *         name: id
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: 1751299643706
+ *         description: 消息ID
+ *     responses:
+ *       200:
+ *         description: ✅ 获取成功
+ */
+router.get('/messages/:projectId', (req: Request, res: Response) => {
+    const { projectId } = req.params
+    const { id } = req.query
+
+    // console.log(message)
+
+    let projectDetail = loadProjectDetail(projectId)
+    if (!projectDetail) {
+        res.status(404).json('项目不存在')
+        return
+    }
+
+    // projectDetail.messages?.push(message)
+    const foundMessage = projectDetail.messages?.find((i) => i.id === id)
+    if (foundMessage) {
+        messageData = foundMessage
+        res.json(foundMessage)
+    } else {
+        res.status(404).json('消息不存在')
+        return
+    }
+})
+
 /** ❌ 删除消息
  * @openapi
  * /messages/{projectId}:
@@ -459,10 +474,6 @@ router.delete('/messages/:projectId', (req: Request, res: Response) => {
     }
 })
 
-// ✅ 获取 Mock 数据
-router.get('/mock/:projectId', (req: Request, res: Response) => {
-    const { projectId } = req.params
-    res.json(mockData[projectId] || {})
-})
-
 export default router
+
+export { messageData }

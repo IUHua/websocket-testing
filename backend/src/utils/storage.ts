@@ -3,8 +3,6 @@ import path from 'path'
 import type {
     Project,
     Message,
-    ProjectMap,
-    MockData,
     ProjectDetail
 } from '../types'
 

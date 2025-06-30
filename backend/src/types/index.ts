@@ -20,8 +20,3 @@ export interface ProjectDetail extends Project {
     messages?: Message[]
 }
 
-// Mock 数据结构
-export type MockData = Record<string, Record<string, any>>
-
-// 项目列表结构
-export type ProjectMap = Record<string, Project>

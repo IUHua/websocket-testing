@@ -9,7 +9,7 @@ const server = http.createServer(app)
 // server.listen(PORT, '0.0.0.0', () => {
 server.listen(PORT, () => {
     console.log(`服务器运行 http://localhost:3000`)
-    console.log(`服务器文档 http://localhost:3000/api-docs`)
+    console.log(`Api文档 http://localhost:3000/api-docs`)
 })
 
 setupMainWebSocket()
