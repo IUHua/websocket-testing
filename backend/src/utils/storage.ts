@@ -1,27 +1,27 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs'
+import path from 'path'
 import type {
-  Project,
-  Message,
-  ProjectMap,
-  MockData,
-  ProjectDetail,
-} from "../types";
+    Project,
+    Message,
+    ProjectMap,
+    MockData,
+    ProjectDetail
+} from '../types'
 
-const DATA_DIR = path.join(__dirname, "../../data");
+const DATA_DIR = path.join(__dirname, '../../data')
 
-export const projectFile = path.join(DATA_DIR, "Project.json");
-let content = [] as Array<Project>;
+export const projectFile = path.join(DATA_DIR, 'Project.json')
+let content = [] as Array<Project>
 
 export function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR);
-  }
-  if (!fs.existsSync(projectFile)) {
-    fs.writeFileSync(projectFile, JSON.stringify([], null, 2), "utf-8");
-  } else {
-    content = JSON.parse(fs.readFileSync(projectFile, "utf-8")) || [];
-  }
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR)
+    }
+    if (!fs.existsSync(projectFile)) {
+        fs.writeFileSync(projectFile, JSON.stringify([], null, 2), 'utf-8')
+    } else {
+        content = JSON.parse(fs.readFileSync(projectFile, 'utf-8')) || []
+    }
 }
 
 /**
@@ -29,8 +29,8 @@ export function ensureDataDir() {
  * @returns {Record<string, any>} 返回项目列表
  */
 export function loadProjects(): Project[] {
-  ensureDataDir();
-  return content;
+    ensureDataDir()
+    return content
 }
 
 /** 存储项目
@@ -38,34 +38,42 @@ export function loadProjects(): Project[] {
  * @returns {boolean} 成功或失败
  */
 export function saveProjects(project: Project) {
-  ensureDataDir();
-  try {
-    // 判断content中是否存在项目名称
+    ensureDataDir()
+    try {
+        // 判断content中是否存在项目名称
 
-    const existName = content.some((item) => item.name === project.name);
-    const existId = content.some((item) => item.id === project.id);
+        const existName = content.some((item) => item.name === project.name)
+        const existId = content.some((item) => item.id === project.id)
 
-    if (existName) {
-      console.log(`项目名称 "${project.name}" 已存在`);
-      return false;
-    } else if (existId) {
-      console.log(`项目详细文件改名 "${project.name}"`);
-      content.map((i) => {
-        if (i.id === project.id) {
-          i.name = project.name;
+        if (existName) {
+            console.log(`项目名称 "${project.name}" 已存在`)
+            return false
+        } else if (existId) {
+            console.log(`项目详细文件改名 "${project.name}"`)
+            content.map((i) => {
+                if (i.id === project.id) {
+                    i.name = project.name
+                }
+                return i
+            })
+            fs.writeFileSync(
+                projectFile,
+                JSON.stringify(content, null, 2),
+                'utf-8'
+            )
+            return true
+        } else {
+            content.push(project)
+            fs.writeFileSync(
+                projectFile,
+                JSON.stringify(content, null, 2),
+                'utf-8'
+            )
         }
-        return i;
-      });
-      fs.writeFileSync(projectFile, JSON.stringify(content, null, 2), "utf-8");
-      return true;
-    } else {
-      content.push(project);
-      fs.writeFileSync(projectFile, JSON.stringify(content, null, 2), "utf-8");
+    } catch (error) {
+        return false
     }
-  } catch (error) {
-    return false;
-  }
-  return true;
+    return true
 }
 
 /** 加载特定项目详情
@@ -73,19 +81,19 @@ export function saveProjects(project: Project) {
  * @returns {Project | null} 返回项目详情或null
  */
 export function loadProjectDetail(projectId: string): ProjectDetail | null {
-  ensureDataDir();
-  const projectFilePath = path.join(DATA_DIR, `${projectId}.json`);
-  if (fs.existsSync(projectFilePath)) {
-    try {
-      const content = fs.readFileSync(projectFilePath, "utf-8");
-      return JSON.parse(content);
-    } catch (err) {
-      console.error(`加载项目 ${projectId} 详情失败:`, err);
-      return null;
+    ensureDataDir()
+    const projectFilePath = path.join(DATA_DIR, `${projectId}.json`)
+    if (fs.existsSync(projectFilePath)) {
+        try {
+            const content = fs.readFileSync(projectFilePath, 'utf-8')
+            return JSON.parse(content)
+        } catch (err) {
+            console.error(`加载项目 ${projectId} 详情失败:`, err)
+            return null
+        }
     }
-  }
-  console.warn(`项目 ${projectId} 不存在`);
-  return null;
+    console.warn(`项目 ${projectId} 不存在`)
+    return null
 }
 
 /** 存储项目详细
@@ -93,18 +101,18 @@ export function loadProjectDetail(projectId: string): ProjectDetail | null {
  * @returns {boolean} 成功或失败
  */
 export function saveProjectDetail(projectDetail: ProjectDetail): boolean {
-  ensureDataDir();
-  const projectDeatilFile = path.join(DATA_DIR, `${projectDetail.id}.json`);
+    ensureDataDir()
+    const projectDeatilFile = path.join(DATA_DIR, `${projectDetail.id}.json`)
 
-  try {
-    fs.writeFileSync(
-      projectDeatilFile,
-      JSON.stringify(projectDetail, null, 2),
-      "utf-8"
-    );
-    return true;
-  } catch (err) {
-    console.error(`保存项目 ${projectDetail.id} 详情失败:`, err);
-    return false;
-  }
+    try {
+        fs.writeFileSync(
+            projectDeatilFile,
+            JSON.stringify(projectDetail, null, 2),
+            'utf-8'
+        )
+        return true
+    } catch (err) {
+        console.error(`保存项目 ${projectDetail.id} 详情失败:`, err)
+        return false
+    }
 }
