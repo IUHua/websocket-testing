@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,16 +12,21 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .container {
             border: 1px solid #ddd;
             padding: 20px;
             margin: 10px 0;
             border-radius: 5px;
         }
-        input, textarea, button {
+
+        input,
+        textarea,
+        button {
             margin: 5px;
             padding: 8px;
         }
+
         #messages {
             height: 300px;
             overflow-y: auto;
@@ -28,38 +34,45 @@
             padding: 10px;
             background: #f9f9f9;
         }
+
         .message {
             margin: 5px 0;
             padding: 5px;
             border-radius: 3px;
         }
+
         .sent {
             background: #e3f2fd;
             border-left: 3px solid #2196f3;
         }
+
         .received {
             background: #e8f5e8;
             border-left: 3px solid #4caf50;
         }
+
         .status {
             padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
             font-weight: bold;
         }
+
         .connected {
             background: #d4edda;
             color: #155724;
         }
+
         .disconnected {
             background: #f8d7da;
             color: #721c24;
         }
     </style>
 </head>
+
 <body>
     <h1>WebSocket 测试平台</h1>
-    
+
     <div class="container">
         <h3>连接控制</h3>
         <input type="text" id="wsUrl" value="ws://localhost:8080" placeholder="WebSocket URL">
@@ -67,7 +80,7 @@
         <button id="disconnectBtn" onclick="disconnect()" disabled>断开</button>
         <div id="status" class="status disconnected">未连接</div>
     </div>
-    
+
     <div class="container">
         <h3>消息发送</h3>
         <textarea id="messageInput" placeholder="输入消息内容..." rows="3" style="width: 100%;"></textarea>
@@ -76,7 +89,7 @@
         <button onclick="sendPing()">发送 Ping</button>
         <button onclick="sendEcho()">发送 Echo</button>
     </div>
-    
+
     <div class="container">
         <h3>消息记录</h3>
         <button onclick="clearMessages()">清空记录</button>
@@ -91,7 +104,7 @@
             const status = document.getElementById('status');
             status.textContent = text;
             status.className = connected ? 'status connected' : 'status disconnected';
-            
+
             document.getElementById('connectBtn').disabled = connected;
             document.getElementById('disconnectBtn').disabled = !connected;
             document.getElementById('sendBtn').disabled = !connected;
@@ -99,29 +112,29 @@
 
         function connect() {
             const url = document.getElementById('wsUrl').value;
-            
+
             try {
                 ws = new WebSocket(url);
-                
-                ws.onopen = function() {
+
+                ws.onopen = function () {
                     updateStatus('已连接', true);
                     addMessage('系统', '连接成功: ' + url, 'system');
                 };
-                
-                ws.onmessage = function(event) {
+
+                ws.onmessage = function (event) {
                     addMessage('接收', event.data, 'received');
                 };
-                
-                ws.onclose = function() {
+
+                ws.onclose = function () {
                     updateStatus('连接已关闭', false);
                     addMessage('系统', '连接已关闭', 'system');
                 };
-                
-                ws.onerror = function(error) {
+
+                ws.onerror = function (error) {
                     updateStatus('连接错误', false);
                     addMessage('系统', '连接错误: ' + error, 'system');
                 };
-                
+
             } catch (error) {
                 updateStatus('连接失败', false);
                 addMessage('系统', '连接失败: ' + error.message, 'system');
@@ -138,8 +151,10 @@
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
-            
+
             if (message && ws && ws.readyState === WebSocket.OPEN) {
+                console.log(message);
+
                 ws.send(message);
                 addMessage('发送', message, 'sent');
                 input.value = '';
@@ -166,13 +181,13 @@
             const messages = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ' + type;
-            
+
             const time = new Date().toLocaleTimeString();
             messageDiv.innerHTML = `
                 <strong>[${time}] ${direction}:</strong><br>
                 <pre style="margin: 5px 0; white-space: pre-wrap;">${content}</pre>
             `;
-            
+
             messages.appendChild(messageDiv);
             messages.scrollTop = messages.scrollHeight;
             messageCount++;
@@ -184,7 +199,7 @@
         }
 
         // 支持回车发送
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        document.getElementById('messageInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
@@ -192,10 +207,10 @@
         });
 
         // 页面加载完成后的初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             updateStatus('未连接', false);
         });
     </script>
 </body>
-</html>
 
+</html>

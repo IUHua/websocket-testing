@@ -11,7 +11,7 @@ import type { Project, Message, ProjectDetail } from '../types'
 const router = Router()
 
 let projects = loadProjects()
-let messageData = {} as Message
+let messageData = {} as ProjectDetail
 
 /** ✅ 获取所有项目
  * @openapi
@@ -106,6 +106,7 @@ router.get('/projects/:id', (req: Request, res: Response) => {
             res.status(404).json({ error: '项目不存在' })
             return
         }
+        messageData = contentDetail
         res.json(contentDetail)
         return
     }
@@ -404,7 +405,7 @@ router.get('/messages/:projectId', (req: Request, res: Response) => {
     // projectDetail.messages?.push(message)
     const foundMessage = projectDetail.messages?.find((i) => i.id === id)
     if (foundMessage) {
-        messageData = foundMessage
+        // messageData = foundMessage
         res.json(foundMessage)
     } else {
         res.status(404).json('消息不存在')
