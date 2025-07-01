@@ -2,10 +2,10 @@
 export interface Message {
     id: string
     description: string
-    type: 'sent' | 'received'
-    inJson: string
-    outJson: string
-    timestamp: string
+    type?: 'sent' | 'received'
+    inJson?: string
+    outJson?: string
+    timestamp?: string
 }
 
 // 项目结构

@@ -26,7 +26,40 @@
                         </div>
                     </div>
                 </el-aside>
-                <el-main>Main</el-main>
+                <el-main>
+                    <el-scrollbar height="100%">
+                    <div class="content" v-if="nowMessage.id">
+                        <div class="message_name">
+                            <el-input
+                                v-model="nowMessage.description"
+                                placeholder="请输入别名"
+                            />
+                            <el-button type="success" plain>保存</el-button>
+                        </div>
+                        <div class="message_box">
+                            <div class="inJson">
+                                <el-input
+                                    v-model="nowMessage.inJson"
+                                    type="textarea"
+                                    :autosize="{ minRows: 10}"
+                                    placeholder="Please input"
+                                />
+                            </div>
+                            <div class="sendBtn">
+                            <el-button type="primary" plain>发送</el-button>
+                            </div>
+                            <div class="outJson">
+                                 <el-input
+                                    v-model="nowMessage.outJson"
+                                    type="textarea"
+                                    :autosize="{ minRows: 10 }"
+                                    placeholder="Please input"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    </el-scrollbar>
+                </el-main>
             </el-container>
         </el-container>
     </div>
@@ -35,7 +68,7 @@
 <script setup lang="ts">
 import { getProjectDetail } from '@renderer/api/project'
 import { ProjectDetail, Message } from '@renderer/types'
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 interface NewMessage extends Message {
@@ -47,6 +80,15 @@ const router = useRouter()
 const messages = ref<NewMessage[]>([])
 const projectId = route.query.projectId
 const projectDetail = ref<ProjectDetail | null>(null)
+const nowMessage = reactive<NewMessage>({
+    id: '',
+    description: '',
+    type: 'sent',
+    inJson: '',
+    outJson: '',
+    timestamp: '',
+    active: false
+})
 
 const init = (): void => {
     getProjectDetail(projectId as string).then((res) => {
@@ -64,6 +106,9 @@ const selectMessage = (message: NewMessage): void => {
         message.active = false
     })
     message.active = true
+    for (const key in message) {
+        nowMessage[key] = message[key]
+    }
 }
 
 onMounted(() => {
@@ -82,14 +127,15 @@ onMounted(() => {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border-bottom: 1px solid var(--el-border-color);
+
     }
     .el-aside {
-        border: 1px solid red;
+        border-right: 1px solid var(--el-border-color);
 
-        // padding: 20px;
     }
     .el-main {
-        border: 1px solid red;
+        padding: 0;
     }
 }
 h2 {
@@ -130,6 +176,53 @@ h2 {
             background: var(--el-color-primary-light-3);
         }
         // overflow: scroll;
+    }
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    
+    .message_name {
+        display: flex;
+        align-items: center;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        gap: 10px;
+        border-bottom: 1px solid var(--el-border-color);
+        .el-input {
+            width: 100%;
+        }
+    }
+    .message_box{
+        // border: 1px solid red;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        .inJson {
+            flex: 1;
+
+            .el-input {
+                width: 100%;
+                height: 100%;
+            }
+        }
+        .sendBtn {
+            padding: 10px;
+            text-align: right;
+            .el-button {
+                // width: 100%;
+            }
+        }
+        .outJson {
+            flex: 1;
+            margin-bottom: 100px;
+            .el-input {
+                width: 100%;
+                height: 100%;
+            }
+        }
     }
 }
 </style>
