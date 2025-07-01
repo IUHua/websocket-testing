@@ -4,6 +4,7 @@ import projectRoutes from './api/projects'
 import morgan from 'morgan'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
+import cors from 'cors'
 
 const app = express()
 
@@ -29,6 +30,7 @@ const swaggerSpec = swaggerJsdoc(options)
 // 挂载swagger-ui中间件
 
 // 挂载 pino-http 中间件，自动记录每次HTTP请求
+app.use(cors())
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))

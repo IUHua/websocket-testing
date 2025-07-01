@@ -25,6 +25,7 @@ let messageData = {} as ProjectDetail
  *         description: ✅ 返回项目列表
  */
 router.get('/projects', (_req: Request, res: Response) => {
+    projects = loadProjects()
     res.json(projects)
 })
 
@@ -47,6 +48,10 @@ router.get('/projects', (_req: Request, res: Response) => {
  *               name:
  *                 type: string
  *                 description: 项目名称
+ *                 example: 表单项目001
+ *               description:
+ *                 type: string
+ *                 description: 项目介绍
  *                 example: 表单项目001
  *     responses:
  *       200:
@@ -75,7 +80,7 @@ router.post('/projects', (req: Request, res: Response) => {
         messages: []
     })
 
-    res.json(project)
+    res.json({ success: true })
 })
 
 /** ✅ 获取特定项目
