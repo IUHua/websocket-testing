@@ -4,18 +4,11 @@ import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import monacoEditorPlugin from 'vite-plugin-monaco-editor'
 
 export default defineConfig({
     main: {
-        plugins: [
-            externalizeDepsPlugin(),
-            AutoImport({
-                resolvers: [ElementPlusResolver()]
-            }),
-            Components({
-                resolvers: [ElementPlusResolver()]
-            })
-        ]
+        plugins: [externalizeDepsPlugin()]
     },
     preload: {
         plugins: [externalizeDepsPlugin()]
@@ -26,7 +19,16 @@ export default defineConfig({
                 '@renderer': resolve('src/renderer/src')
             }
         },
-        plugins: [vue()],
+        plugins: [
+            vue(),
+            AutoImport({
+                resolvers: [ElementPlusResolver()]
+            }),
+            Components({
+                resolvers: [ElementPlusResolver()]
+            }),
+            monacoEditorPlugin.default({ languageWorkers: ['json'] }) // Monaco编辑器 非要加default？？？？
+        ],
         server: {
             proxy: {
                 '/api': {

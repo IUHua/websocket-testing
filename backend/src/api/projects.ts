@@ -339,6 +339,8 @@ router.post('/messages/:projectId', (req: Request, res: Response) => {
 router.put('/messages/:projectId', (req: Request, res: Response) => {
     const { projectId } = req.params
     const { id, type, description, inJson, outJson } = req.body
+    console.log(req.body)
+
     console.log(projectId, id, type, description, inJson, outJson)
 
     const projectDetail = loadProjectDetail(projectId)
