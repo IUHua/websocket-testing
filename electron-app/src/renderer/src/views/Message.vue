@@ -7,23 +7,15 @@
                     {{ projectDetail?.name }}
                 </h2>
                 <div class="selectWs">
-                    <el-radio-group v-model="radioWs">
-                        <el-radio style="margin-right: 0" value="target"
-                            >目标地址</el-radio
-                        >
-                        <el-input
-                            v-if="radioWs === 'target'"
-                            placeholder="目标WS地址"
-                            style="width: 300px"
-                        ></el-input>
-                        <el-radio value="local">Mock地址</el-radio>
-                    </el-radio-group>
+                    <el-icon @click="dialogSetting = true"><Tools /></el-icon>
                 </div>
             </el-header>
             <el-container>
                 <el-aside width="20%">
                     <div class="message">
-                        <h3>Mock</h3>
+                        <h3>
+                            Mock <el-icon @click="addMessage"><Plus /></el-icon>
+                        </h3>
                         <div class="message_list">
                             <el-scrollbar height="100%">
                                 <div
@@ -32,6 +24,7 @@
                                     class="message_item"
                                     :class="message.active ? 'active' : ''"
                                     @click="selectMessage(message)"
+                                    @contextmenu="deleteMessage(message)"
                                 >
                                     {{ message.description }}
                                 </div>
@@ -68,7 +61,29 @@
                                 ></div>
                             </div>
                             <div class="sendBtn">
-                                <el-button type="primary" plain>发送</el-button>
+                                <div class="onlyKey" @click="loadKey">
+                                    唯一Key：
+                                    <el-select
+                                        v-model="nowMessage.type"
+                                        placeholder="Select"
+                                        style="width: 240px"
+                                    >
+                                        <el-option
+                                            v-for="item in onlyKeys"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item"
+                                        />
+                                    </el-select>
+                                </div>
+                                <el-button
+                                    type="primary"
+                                    plain
+                                    :disabled="!wsStatus"
+                                    @click="sendMessage"
+                                >
+                                    发送
+                                </el-button>
                             </div>
                             <div class="outJson">
                                 <!-- <el-input
@@ -87,6 +102,46 @@
                 </el-main>
             </el-container>
         </el-container>
+
+        <el-dialog v-model="dialogSetting" title="项目配置" width="800">
+            <div class="dialog_box">
+                <div class="wsAddress">
+                    <span> WS配置： </span>
+                    <el-radio-group v-model="radioWs" @change="changeWs">
+                        <el-radio value="target">目标地址</el-radio>
+                        <el-radio value="local">Mock地址</el-radio>
+                    </el-radio-group>
+                </div>
+
+                <div v-show="radioWs === 'target'" class="target_url">
+                    <span> 目标地址： </span>
+                    <el-input
+                        v-model="wsTarget"
+                        placeholder="目标WS地址"
+                        style="width: 300px"
+                    />
+                    <el-button
+                        :type="wsStatus ? 'warning' : 'primary'"
+                        plain
+                        style="margin-left: 20px"
+                        @click="connectWs"
+                    >
+                        {{ wsStatus ? '断开' : '连接' }}
+                    </el-button>
+                </div>
+                <div class="dialog_item">
+                    <span></span>
+                </div>
+            </div>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="dialogSetting = false">取消</el-button>
+                    <el-button type="primary" @click="dialogSetting = false">
+                        确认
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -97,7 +152,11 @@ import { onMounted, reactive, ref, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as monaco from 'monaco-editor'
 import { ElMessage } from 'element-plus'
-import { updateMessage } from '@renderer/api/message'
+import {
+    createMessage,
+    updateMessage,
+    deleteMessage as deleteMessageApi
+} from '@renderer/api/message'
 
 interface NewMessage extends Message {
     active?: boolean
@@ -111,6 +170,10 @@ const projectDetail = ref<ProjectDetail | null>(null)
 const inEditorRef = ref()
 const outEditorRef = ref()
 const radioWs = ref('target')
+const wsTarget = ref('wss://echo.websocket.org')
+const wsStatus = ref(false)
+const onlyKeys = ref<string[]>([])
+const dialogSetting = ref(!false)
 const nowMessage = reactive<NewMessage>({
     id: '',
     description: '',
@@ -122,6 +185,8 @@ const nowMessage = reactive<NewMessage>({
 })
 let inCode
 let outCode
+let ws: WebSocket | null = null
+console.log(ws)
 
 const init = (): void => {
     getProjectDetail(projectId as string).then((res) => {
@@ -132,10 +197,38 @@ const init = (): void => {
         projectDetail.value = res
     })
 }
+// 监听项目变化
+const changeWs = (value: string): void => {
+    console.log(value)
+    // if (value === 'target') {
+
+    // }
+}
+
+// 加载Key
+const loadKey = (): void => {
+    const inModel = inCode.getModel()
+
+    const inMarkers = monaco.editor.getModelMarkers({ resource: inModel.uri })
+
+    if (inMarkers.length === 0) {
+        console.log('代码格式正确！🎉')
+        nowMessage.inJson = inCode.getValue()
+        onlyKeys.value = Object.keys(JSON.parse(nowMessage.inJson || ''))
+    } else {
+        console.log('代码格式有错误：', inMarkers)
+        inMarkers.forEach((marker) => {
+            console.log(`第${marker.startLineNumber}行: ${marker.message}`)
+        })
+        ElMessage({
+            type: 'error',
+            message: 'JSON代码格式有错误！'
+        })
+    }
+}
 
 // 选择消息
 const selectMessage = (message: NewMessage): void => {
-    console.log(message)
     messages.value.forEach((message) => {
         message.active = false
     })
@@ -143,20 +236,57 @@ const selectMessage = (message: NewMessage): void => {
     for (const key in message) {
         nowMessage[key] = message[key]
     }
-    nextTick(() => {
+    setInCode()
+    setOutCode()
+}
+
+// 添加消息
+const addMessage = async (): Promise<void> => {
+    await createMessage(projectId as string, {
+        description: '新建消息',
+        type: '',
+        inJson: '',
+        outJson: '',
+        timestamp: '',
+        id: ''
+    })
+    init()
+}
+
+// 删除消息
+const deleteMessage = async (message: Message): Promise<void> => {
+    await deleteMessageApi(projectId as string, message.id)
+    ElMessage({
+        type: 'success',
+        message: '删除成功'
+    })
+    init()
+}
+
+// 重置code编辑器
+const setInCode = async (): Promise<void> => {
+    if (!nowMessage.id) return
+    await nextTick(() => {
         if (inCode) {
             inCode.dispose()
             inCode = null
         }
-        if (outCode) {
-            outCode.dispose()
-            outCode = null
-        }
+
         inCode = monaco.editor.create(inEditorRef.value, {
             value: nowMessage.inJson,
             language: 'json',
             theme: 'vs-dark'
         })
+    })
+}
+// 重置code编辑器
+const setOutCode = async (): Promise<void> => {
+    if (!nowMessage.id) return
+    await nextTick(() => {
+        if (outCode) {
+            outCode.dispose()
+            outCode = null
+        }
 
         outCode = monaco.editor.create(outEditorRef.value, {
             value: nowMessage.outJson,
@@ -227,6 +357,88 @@ const saveMessage = (): void => {
     })
 }
 
+// 连接ws
+const connectWs = (): void => {
+    if (wsStatus.value) {
+        ws?.close()
+        return
+    }
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ElMessage({
+            type: 'info',
+            message: 'WebSocket 已连接'
+        })
+        wsStatus.value = true
+        return
+    }
+    wsStatus.value = false
+    let wsUrl = ''
+    if (radioWs.value === 'target') {
+        wsUrl = wsTarget.value
+    } else {
+        wsUrl = 'ws://localhost:8080' // Mock地址可根据实际情况修改
+    }
+    if (!wsUrl) {
+        ElMessage({
+            type: 'warning',
+            message: '请输入WebSocket地址'
+        })
+        return
+    }
+    try {
+        ws = new WebSocket(wsUrl)
+        ws.onopen = () => {
+            ElMessage({
+                type: 'success',
+                message: 'WebSocket 连接成功'
+            })
+            wsStatus.value = true
+        }
+        ws.onerror = () => {
+            ElMessage({
+                type: 'error',
+                message: 'WebSocket 连接失败'
+            })
+            ws = null
+        }
+        ws.onclose = () => {
+            ElMessage({
+                type: 'info',
+                message: 'WebSocket 已关闭'
+            })
+            ws = null
+            wsStatus.value = false
+        }
+        ws.onmessage = (msg) => {
+            console.log(msg.data)
+            nowMessage.outJson = msg.data
+            setOutCode()
+        }
+    } catch {
+        ElMessage({
+            type: 'error',
+            message: 'WebSocket 连接异常'
+        })
+        ws = null
+    }
+}
+
+// 发送消息
+const sendMessage = async (): Promise<void> => {
+    nowMessage.inJson = inCode.getValue()
+    await setInCode()
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        wsStatus.value = true
+        ws?.send(nowMessage.inJson as string)
+        return
+    } else {
+        ElMessage({
+            type: 'warning',
+            message: '请先连接WebSocket'
+        })
+    }
+}
+
 onMounted(() => {
     init()
 })
@@ -256,13 +468,14 @@ onMounted(() => {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 10px;
     .el-radio-group {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-left: 10px;
-        flex-wrap: nowrap;
-        gap: 20px;
+        // display: flex;
+        // justify-content: center;
+        // align-items: center;
+        // margin-left: 10px;
+        // flex-wrap: nowrap;
+        // gap: 20px;
     }
 }
 h2 {
@@ -286,6 +499,12 @@ h2 {
         color: var(--color-text-default);
         font-weight: bold;
         padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .el-icon {
+            cursor: pointer;
+        }
     }
     .message_list {
         flex: 1;
@@ -340,7 +559,9 @@ h2 {
         }
         .sendBtn {
             padding: 10px;
-            text-align: right;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .outJson {
             flex: 1;
@@ -350,5 +571,12 @@ h2 {
             }
         }
     }
+}
+
+.dialog_box {
+    border: 1px solid red;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 </style>

@@ -11,7 +11,7 @@ export function setupMainWebSocket() {
 
             const data = JSON.parse(message.toString())
             const outMesage = messageData.messages?.find(
-                (i) => i.type === data.type
+                (i) => i.type === data[i.type]
             )
             if (outMesage) {
                 ws.send(JSON.stringify(outMesage.outJson))

@@ -2,7 +2,7 @@
 export interface Message {
     id: string
     description: string
-    type: 'sent' | 'received'
+    type: string
     inJson: string
     outJson: string
     timestamp: string
@@ -19,4 +19,3 @@ export interface Project {
 export interface ProjectDetail extends Project {
     messages?: Message[]
 }
-
