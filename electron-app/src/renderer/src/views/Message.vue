@@ -7,7 +7,14 @@
                     {{ projectDetail?.name }}
                 </h2>
                 <div class="selectWs">
-                    <el-icon @click="dialogSetting = true"><Tools /></el-icon>
+                    <el-button
+                        :type="wsStatus ? 'warning' : 'primary'"
+                        plain
+                        @click="connectWs"
+                    >
+                        {{ wsStatus ? '断开' : '连接' }}
+                    </el-button>
+                    <el-icon @click="openSetting"><Tools /></el-icon>
                 </div>
             </el-header>
             <el-container>
@@ -39,6 +46,7 @@
                                 v-model="nowMessage.description"
                                 placeholder="请输入别名"
                             />
+
                             <el-button
                                 type="success"
                                 plain
@@ -49,33 +57,13 @@
                         </div>
                         <div class="message_box">
                             <div class="inJson">
-                                <!-- <el-input
-                                        v-model="nowMessage.inJson"
-                                        type="textarea"
-                                        :autosize="{ minRows: 10 }"
-                                        placeholder="Please input"
-                                    /> -->
                                 <div
                                     ref="inEditorRef"
                                     style="height: 100%"
                                 ></div>
                             </div>
                             <div class="sendBtn">
-                                <div class="onlyKey" @click="loadKey">
-                                    唯一Key：
-                                    <el-select
-                                        v-model="nowMessage.type"
-                                        placeholder="Select"
-                                        style="width: 240px"
-                                    >
-                                        <el-option
-                                            v-for="item in onlyKeys"
-                                            :key="item"
-                                            :label="item"
-                                            :value="item"
-                                        />
-                                    </el-select>
-                                </div>
+                                <div class="onlyKey" @click="loadKey"></div>
                                 <el-button
                                     type="primary"
                                     plain
@@ -86,12 +74,6 @@
                                 </el-button>
                             </div>
                             <div class="outJson">
-                                <!-- <el-input
-                                    v-model="nowMessage.outJson"
-                                    type="textarea"
-                                    :autosize="{ minRows: 10 }"
-                                    placeholder="Please input"
-                                /> -->
                                 <div
                                     ref="outEditorRef"
                                     style="height: 100%"
@@ -103,40 +85,58 @@
             </el-container>
         </el-container>
 
-        <el-dialog v-model="dialogSetting" title="项目配置" width="800">
+        <el-dialog v-model="dialogSetting" title="项目配置" width="700">
             <div class="dialog_box">
-                <div class="wsAddress">
-                    <span> WS配置： </span>
-                    <el-radio-group v-model="radioWs" @change="changeWs">
-                        <el-radio value="target">目标地址</el-radio>
-                        <el-radio value="local">Mock地址</el-radio>
-                    </el-radio-group>
-                </div>
-
-                <div v-show="radioWs === 'target'" class="target_url">
-                    <span> 目标地址： </span>
-                    <el-input
-                        v-model="wsTarget"
-                        placeholder="目标WS地址"
-                        style="width: 300px"
-                    />
-                    <el-button
-                        :type="wsStatus ? 'warning' : 'primary'"
-                        plain
-                        style="margin-left: 20px"
-                        @click="connectWs"
+                <el-form
+                    :model="projectForm"
+                    label-width="auto"
+                    style="max-width: 600px"
+                    ref="projectFormRef"
+                >
+                    <el-form-item label="项目名称" prop="name" required>
+                        <el-input
+                            v-model="projectForm.name"
+                            placeholder="请输入项目名称"
+                        />
+                    </el-form-item>
+                    <el-form-item label="项目描述" prop="description">
+                        <el-input
+                            v-model="projectForm.description"
+                            placeholder="请输入项目描述"
+                        />
+                    </el-form-item>
+                    <el-form-item label="Type Key" prop="typeKey">
+                        <el-input
+                            v-model="projectForm.typeKey"
+                            placeholder="请输入项目描述"
+                        />
+                    </el-form-item>
+                    <el-form-item label="WS配置">
+                        <el-radio-group v-model="radioWs" @change="changeWs">
+                            <el-radio value="target">目标地址</el-radio>
+                            <el-radio value="local" disabled>Mock地址</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item
+                        label="目标地址"
+                        v-show="radioWs === 'target'"
                     >
-                        {{ wsStatus ? '断开' : '连接' }}
-                    </el-button>
-                </div>
-                <div class="dialog_item">
-                    <span></span>
-                </div>
+                        <el-input
+                            v-model="wsTarget"
+                            placeholder="Please input"
+                            class="input-with-select"
+                        >
+                        </el-input>
+                    </el-form-item>
+                </el-form>
             </div>
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="dialogSetting = false">取消</el-button>
-                    <el-button type="primary" @click="dialogSetting = false">
+                    <el-button
+                        type="primary"
+                        @click="submitForm(projectFormRef)"
+                    >
                         确认
                     </el-button>
                 </div>
@@ -146,12 +146,12 @@
 </template>
 
 <script setup lang="ts">
-import { getProjectDetail } from '@renderer/api/project'
+import { getProjectDetail, updateProject } from '@renderer/api/project'
 import { ProjectDetail, Message } from '@renderer/types'
-import { onMounted, reactive, ref, nextTick } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, reactive, ref, nextTick, onUnmounted } from 'vue'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import * as monaco from 'monaco-editor'
-import { ElMessage } from 'element-plus'
+import { ElMessage, FormInstance } from 'element-plus'
 import {
     createMessage,
     updateMessage,
@@ -173,7 +173,7 @@ const radioWs = ref('target')
 const wsTarget = ref('wss://echo.websocket.org')
 const wsStatus = ref(false)
 const onlyKeys = ref<string[]>([])
-const dialogSetting = ref(!false)
+const dialogSetting = ref(false)
 const nowMessage = reactive<NewMessage>({
     id: '',
     description: '',
@@ -183,10 +183,15 @@ const nowMessage = reactive<NewMessage>({
     timestamp: '',
     active: false
 })
+const projectFormRef = ref<FormInstance>()
+const projectForm = ref({
+    name: '',
+    description: '',
+    typeKey: ''
+})
 let inCode
 let outCode
 let ws: WebSocket | null = null
-console.log(ws)
 
 const init = (): void => {
     getProjectDetail(projectId as string).then((res) => {
@@ -197,6 +202,54 @@ const init = (): void => {
         projectDetail.value = res
     })
 }
+
+// 打开编辑项目弹窗
+const openSetting = () => {
+    if (projectDetail.value) {
+        projectForm.value = {
+            name: projectDetail.value.name,
+            description: projectDetail.value.description || '',
+            typeKey: projectDetail.value.typeKey || ''
+        }
+    }
+
+    dialogSetting.value = true
+}
+
+// 编辑项目
+const submitForm = async (formEl: FormInstance | undefined) => {
+    // 检查表单值是否有变化
+    const hasFormChanged = (): boolean => {
+        if (!projectDetail.value) return false
+        return (
+            projectForm.value.name !== projectDetail.value.name ||
+            projectForm.value.description !== projectDetail.value.description ||
+            projectForm.value.typeKey !== projectDetail.value.typeKey
+        )
+    }
+
+    // 如果表单没有改变,则不提交
+    if (!hasFormChanged()) {
+        dialogSetting.value = false
+        return
+    }
+    if (!formEl) return
+    await formEl.validate(async (valid, fields) => {
+        if (valid) {
+            console.log('submit!')
+            await updateProject(projectId as string, projectForm.value)
+            ElMessage({
+                type: 'success',
+                message: '更新成功'
+            })
+            dialogSetting.value = false
+            init()
+        } else {
+            console.log('error submit!', fields)
+        }
+    })
+}
+
 // 监听项目变化
 const changeWs = (value: string): void => {
     console.log(value)
@@ -442,6 +495,20 @@ const sendMessage = async (): Promise<void> => {
 onMounted(() => {
     init()
 })
+
+onBeforeRouteLeave((to, from, next) => {
+    const answer = window.confirm('你还没保存，确定要离开吗？🫣')
+    ws?.close()
+    if (answer) {
+        next() // 继续跳转
+    } else {
+        next(false) // 阻止跳转
+    }
+})
+
+onUnmounted(() => {
+    ws?.close()
+})
 </script>
 
 <style scoped lang="scss">
@@ -536,10 +603,10 @@ h2 {
         align-items: center;
         padding-bottom: 10px;
         margin-bottom: 10px;
-        gap: 10px;
         border-bottom: 1px solid var(--el-border-color);
         .el-input {
             width: 100%;
+            margin-right: 10px;
         }
     }
     .message_box {
@@ -574,9 +641,9 @@ h2 {
 }
 
 .dialog_box {
-    border: 1px solid red;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding: 20px;
 }
 </style>

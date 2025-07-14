@@ -1,10 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import type {
-    Project,
-    Message,
-    ProjectDetail
-} from '../types'
+import type { Project, Message, ProjectDetail } from '../types'
 
 const DATA_DIR = path.join(__dirname, '../../data')
 
@@ -39,21 +35,24 @@ export function saveProjects(project: Project) {
     ensureDataDir()
     try {
         // 判断content中是否存在项目名称
+        console.log(project)
 
         const existName = content.some((item) => item.name === project.name)
         const existId = content.some((item) => item.id === project.id)
 
-        if (existName) {
-            console.log(`项目名称 "${project.name}" 已存在`)
-            return false
-        } else if (existId) {
-            console.log(`项目详细文件改名 "${project.name}"`)
-            content.map((i) => {
-                if (i.id === project.id) {
-                    i.name = project.name
-                }
-                return i
-            })
+        // if (existName) {
+        //     console.log(`项目名称 "${project.name}" 已存在`)
+        //     return false
+        // } else
+        if (existId) {
+            console.log(`项目${existId}详细文件改名 "${project.name}"`)
+            const targetProject = content.find((i) => i.id === project.id)
+            if (targetProject) {
+                targetProject.name = project.name
+                targetProject.description = project.description
+                targetProject.typeKey = project.typeKey
+            }
+
             fs.writeFileSync(
                 projectFile,
                 JSON.stringify(content, null, 2),

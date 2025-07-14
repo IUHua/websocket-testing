@@ -14,8 +14,9 @@ export interface Project {
     name: string
     description?: string
     createdAt?: string
+    typeKey?: string
 }
 
-export interface ProjectDetail extends Project {
+export interface ProjectDetail extends Omit<Project, 'id'> {
     messages?: Message[]
 }

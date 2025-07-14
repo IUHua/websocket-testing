@@ -66,7 +66,8 @@ router.post('/projects', (req: Request, res: Response) => {
         id: projectId,
         name: name || `项目 ${projectId}`,
         description: description || '',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        typeKey: ''
     }
 
     // projects[projectId] = project;
@@ -122,7 +123,7 @@ router.get('/projects/:id', (req: Request, res: Response) => {
  * @openapi
  * /projects/{id}:
  *   put:
- *     summary: ✅ 更新特定项目
+ *     summary: 更新项目
  *     tags:
  *       - 项目管理
  *     parameters:
@@ -131,22 +132,31 @@ router.get('/projects/:id', (req: Request, res: Response) => {
  *         required: true
  *         schema:
  *           type: string
- *           example: 1751169642083
  *         description: 项目ID
- *       - in: query
- *         name: name
- *         required: false
- *         schema:
- *           type: string
- *         description: 新的项目名称
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: 新的项目名称
+ *               description:
+ *                 type: string
+ *                 description: 新的项目描述
+ *               typeKey:
+ *                 type: string
+ *                 description: 新的项目类型键
  *     responses:
  *       200:
  *         description: ✅ 更新成功
  */
 router.put('/projects/:id', (req: Request, res: Response) => {
     const { id } = req.params
-    const { name } = req.query
-    // 修改项目
+    const { name, description, typeKey } = req.body
+
     projects = loadProjects()
 
     const project = projects.find((p: Project) => p.id === id)
@@ -155,19 +165,21 @@ router.put('/projects/:id', (req: Request, res: Response) => {
         res.status(404).json({ error: '项目不存在' })
         return
     }
-    // @debug 这里直接改project.name会导致storage中项目名称一起改变？
-    // project.name = name ? name.toString() : project.name;
-    const saveStatus = saveProjects({
+
+    const updatedProject = {
         ...project,
-        name: name ? name.toString() : project.name
-    })
+        name: name ? name.toString() : project.name,
+        description: description ? description.toString() : project.description,
+        typeKey: typeKey ? typeKey.toString() : project.typeKey
+    }
+
+    const saveStatus = saveProjects(updatedProject)
 
     if (!saveStatus) {
         res.status(400).json({ error: '项目名称已存在' })
         return
     }
 
-    // 修改项目详细
     const contentDetail = loadProjectDetail(id)
     if (!contentDetail) {
         res.status(404).json({ error: '项目不存在' })
@@ -176,10 +188,12 @@ router.put('/projects/:id', (req: Request, res: Response) => {
 
     saveProjectDetail({
         ...contentDetail,
-        name: name ? name.toString() : project.name
+        name: updatedProject.name,
+        description: updatedProject.description,
+        typeKey: updatedProject.typeKey
     })
 
-    res.json({ success: true, project })
+    res.json({ success: true, project: updatedProject })
 })
 
 /** ✅ 删除特定项目
