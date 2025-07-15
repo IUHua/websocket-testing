@@ -353,7 +353,6 @@ router.post('/messages/:projectId', (req: Request, res: Response) => {
 router.put('/messages/:projectId', (req: Request, res: Response) => {
     const { projectId } = req.params
     const { id, type, description, inJson, outJson } = req.body
-    console.log(req.body)
 
     console.log(projectId, id, type, description, inJson, outJson)
 
@@ -365,14 +364,13 @@ router.put('/messages/:projectId', (req: Request, res: Response) => {
     // projectDetail.messages?.push(message)
     const existMessage = projectDetail.messages?.some((i) => i.id === id)
     if (existMessage) {
-        projectDetail.messages?.map((i) => {
-            if (i.id === id) {
-                i.type = type
-                i.description = description
-                i.inJson = inJson
-                i.outJson = outJson
-            }
-        })
+        const targetMessage = projectDetail.messages?.find((i) => i.id === id)
+        if (targetMessage) {
+            targetMessage.type = type
+            targetMessage.description = description
+            targetMessage.inJson = inJson
+            targetMessage.outJson = outJson
+        }
     } else {
         res.status(404).json('消息不存在')
         return

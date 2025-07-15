@@ -7,14 +7,15 @@ export function setupMainWebSocket() {
     wss.on('connection', (ws) => {
         console.log('新的 WebSocket 连接')
         ws.on('message', (message) => {
-            console.log(message)
-
             const data = JSON.parse(message.toString())
+            console.log('🚀 ~ ws.on ~ data:', data)
+            console.log(messageData.typeKey)
+
             const outMesage = messageData.messages?.find(
-                (i) => i.type === data[i.type]
+                (i) => i.type === data[messageData.typeKey]
             )
             if (outMesage) {
-                ws.send(JSON.stringify(outMesage.outJson))
+                ws.send(outMesage.outJson)
             }
         })
         ws.on('close', () => console.log('WebSocket 连接关闭'))

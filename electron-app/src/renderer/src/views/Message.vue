@@ -400,8 +400,23 @@ const saveMessage = (): void => {
     }
     nowMessage.inJson = inCode.getValue()
     nowMessage.outJson = outCode.getValue()
+
+    if (projectDetail.value?.typeKey) {
+        // nowMessage.type = inCode projectDetail.value?.typeKey
+        try {
+            const inJson = JSON.parse(inCode.getValue())
+            nowMessage.type = inJson[projectDetail.value?.typeKey]
+            if (!nowMessage.type) {
+                ElMessage({
+                    type: 'info',
+                    message:
+                        'typeKey 不存在,请在设置中查看typeKey，保证与输入一致'
+                })
+            }
+        } catch (error) {}
+    }
+
     updateMessage(projectId as string, nowMessage).then((res) => {
-        console.log(res)
         ElMessage({
             type: 'success',
             message: '保存成功'
@@ -496,15 +511,15 @@ onMounted(() => {
     init()
 })
 
-onBeforeRouteLeave((to, from, next) => {
-    const answer = window.confirm('你还没保存，确定要离开吗？🫣')
-    ws?.close()
-    if (answer) {
-        next() // 继续跳转
-    } else {
-        next(false) // 阻止跳转
-    }
-})
+// onBeforeRouteLeave((to, from, next) => {
+//     const answer = window.confirm('你还没保存，确定要离开吗？🫣')
+//     ws?.close()
+//     if (answer) {
+//         next() // 继续跳转
+//     } else {
+//         next(false) // 阻止跳转
+//     }
+// })
 
 onUnmounted(() => {
     ws?.close()

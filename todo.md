@@ -1,26 +1,26 @@
-- [x] 创建项目根目录 `websocket-test-platform`
-- [x] 在根目录下创建 `backend` 和 `frontend` 目录
-- [x] 初始化 `backend` 目录（`npm init -y`）
-- [x] 安装后端依赖（`ws`, `express`）
-- [x] 初始化 `frontend` 目录（`npm create vue@latest`）
-- [x] 安装前端依赖（`monaco-editor` 等）
-- [ ] 阶段2：后端 WebSocket 服务开发
-  - [ ] 实现 WebSocket 连接功能
-  - [ ] 实现 REST 接口（Mock 回放）
-  - [ ] 实现通信日志按项目保存
-  - [ ] 实现 Mock 回放机制
-- [ ] 阶段3：前端 Vue 3 应用开发
-  - [ ] 开发 WebSocket 连接面板
-  - [ ] 开发消息收发窗口
-  - [ ] 开发项目与记录浏览器
-  - [ ] 开发 Mock 回放控制器
-  - [ ] 集成 `monaco-editor`
-  - [ ] 实现持久化存储
-- [ ] 阶段4：前后端集成和功能测试
-  - [ ] 联调 WebSocket 通信
-  - [ ] 联调 Mock 回放功能
-  - [ ] 进行全面的功能测试
-- [ ] 阶段5：项目部署和演示
-  - [ ] 准备部署脚本或说明
-  - [ ] 演示平台功能
-
+-   [x] 创建项目根目录 `websocket-test-platform`
+-   [x] 在根目录下创建 `backend` 和 `frontend` 目录
+-   [x] 初始化 `backend` 目录（`npm init -y`）
+-   [x] 安装后端依赖（`ws`, `express`）
+-   [x] 初始化 `frontend` 目录（`npm create vue@latest`）
+-   [x] 安装前端依赖（`monaco-editor` 等）
+-   [x] 阶段 2：后端 WebSocket 服务开发
+    -   [x] 实现 WebSocket 连接功能
+    -   [x] 实现 REST 接口（Mock 回放）
+    -   [x] 实现通信日志按项目保存
+    -   [x] 实现 Mock 回放机制
+-   [x] 阶段 3：前端 Vue 3 应用开发
+    -   [x] 开发 WebSocket 连接面板
+    -   [x] 开发消息收发窗口
+    -   [x] 开发项目与记录浏览器
+    -   [x] 开发 Mock 回放控制器
+    -   [x] 集成 `monaco-editor`
+    -   [x] 实现持久化存储
+-   [x] 阶段 4：前后端集成和功能测试
+    -   [x] 联调 WebSocket 通信
+    -   [x] 联调 Mock 回放功能
+    -   [x] 进行全面的功能测试
+-   [x] 阶段 5：项目部署和演示
+    -   [x] 准备部署脚本或说明
+    -   [x] 演示平台功能
+-   [ ] 阶段 6：Mock_Ws 按 typeKey 为唯一键返回
