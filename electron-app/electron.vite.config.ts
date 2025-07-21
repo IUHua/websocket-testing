@@ -27,7 +27,7 @@ export default defineConfig({
             Components({
                 resolvers: [ElementPlusResolver()]
             }),
-            monacoEditorPlugin.default({ languageWorkers: ['json'] }) // Monaco编辑器 非要加default？？？？
+            (monacoEditorPlugin as any).default({ languageWorkers: ['json'] }) // Monaco编辑器 非要加default？？？？
         ],
         server: {
             proxy: {

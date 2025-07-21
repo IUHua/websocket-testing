@@ -5,6 +5,7 @@
         "src/renderer/src/**/*",
         "src/renderer/src/**/**/*",
         "src/renderer/src/**/*.vue",
+        "src/renderer/src/**/*.json",
         "src/preload/*.d.ts"
     ],
     "compilerOptions": {
@@ -13,6 +14,8 @@
         "paths": {
             "@renderer/*": ["src/renderer/src/*"]
         },
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
         "declaration": true
     }
 }

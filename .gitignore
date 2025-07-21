@@ -28,6 +28,8 @@ build/
 .svelte-kit/
 out/
 backend/data/
+release/
+electron-app/resources/data/
 
 
 # ### 日志文件 / Log files ###

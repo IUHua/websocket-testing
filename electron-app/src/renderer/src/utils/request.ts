@@ -3,7 +3,11 @@ import { ElMessage } from 'element-plus'
 
 // 创建 axios 实例
 const service = axios.create({
-    baseURL: '/api', // ✅ 你的 API 前缀，或空字符串
+    // 根据环境设置不同的 baseURL
+    baseURL:
+        process.env.NODE_ENV === 'production'
+            ? 'http://localhost:3000/api' // 生产环境直接指向后端服务
+            : '/api', // 开发环境使用 Vite 代理
     timeout: 10 * 1000, // 请求超时时间
     headers: {
         'Content-Type': 'application/json'
@@ -32,7 +36,7 @@ service.interceptors.response.use(
     (err) => {
         ElMessage({
             type: 'error',
-            message: err.response.data.error || '请求错误'
+            message: err.response?.data?.error || '请求错误'
         })
         return Promise.reject(err)
     }

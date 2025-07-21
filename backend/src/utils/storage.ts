@@ -2,7 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import type { Project, Message, ProjectDetail } from '../types'
 
-const DATA_DIR = path.join(__dirname, '../../data')
+const executableDir = path.dirname(process.execPath)
+const DATA_DIR = path.join(executableDir, 'data')
 
 export const projectFile = path.join(DATA_DIR, 'Project.json')
 let content = [] as Array<Project>

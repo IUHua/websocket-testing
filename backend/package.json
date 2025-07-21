@@ -7,7 +7,19 @@
         "build": "tsc",
         "start": "node dist/server.js",
         "typecheck": "tsc --noEmit",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "build:pkg": "rm -rf ./release && pkg . --out-path ./release"
+    },
+    "bin": "dist/server.js",
+    "pkg": {
+        "scripts": "build/**/*.js",
+        "assets": [],
+        "targets": [
+            "node18-linux-x64",
+            "node18-win-x64",
+            "node18-macos-x64"
+        ],
+        "outputPath": "build"
     },
     "keywords": [],
     "author": "",

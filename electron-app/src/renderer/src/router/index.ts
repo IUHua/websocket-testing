@@ -2,7 +2,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
-    { path: '/', component: () => import('../views/Home.vue') },
+    { path: '/', component: () => import('../views/Loading.vue') },
+    // { path: '/', component: () => import('../views/Home.vue') },
+    { path: '/Home', component: () => import('../views/Home.vue') },
     { path: '/Message', component: () => import('../views/Message.vue') }
 ]
 

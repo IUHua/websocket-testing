@@ -1,4 +1,4 @@
-import { messageData } from '@/api/projects'
+import { messageData } from '../api/projects'
 import WebSocket from 'ws'
 
 export function setupMainWebSocket() {

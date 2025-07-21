@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: electron-app
+appId: com.websocket.testplatform
+productName: WebSocket-Testing
 directories:
     buildResources: build
 files:
@@ -9,6 +9,9 @@ files:
     - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
     - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
     - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+extraResources:
+  - from: ./resources/backend-macos
+    to: backend-macos
 asarUnpack:
     - resources/**
 win:
@@ -19,6 +22,8 @@ nsis:
     uninstallDisplayName: ${productName}
     createDesktopShortcut: always
 mac:
+    target:
+        - dmg
     entitlementsInherit: build/entitlements.mac.plist
     extendInfo:
         - NSCameraUsageDescription: Application requests access to the device's camera.

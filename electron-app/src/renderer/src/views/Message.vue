@@ -149,7 +149,7 @@
 import { getProjectDetail, updateProject } from '@renderer/api/project'
 import { ProjectDetail, Message } from '@renderer/types'
 import { onMounted, reactive, ref, nextTick, onUnmounted } from 'vue'
-import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import * as monaco from 'monaco-editor'
 import { ElMessage, FormInstance } from 'element-plus'
 import {
@@ -416,7 +416,7 @@ const saveMessage = (): void => {
         } catch (error) {}
     }
 
-    updateMessage(projectId as string, nowMessage).then((res) => {
+    updateMessage(projectId as string, nowMessage).then((_res) => {
         ElMessage({
             type: 'success',
             message: '保存成功'
@@ -551,14 +551,6 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
     gap: 10px;
-    .el-radio-group {
-        // display: flex;
-        // justify-content: center;
-        // align-items: center;
-        // margin-left: 10px;
-        // flex-wrap: nowrap;
-        // gap: 20px;
-    }
 }
 h2 {
     font-weight: bold;
